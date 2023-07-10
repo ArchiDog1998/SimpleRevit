@@ -1,0 +1,10 @@
+﻿<RevitAddIns>
+    <AddIn Type="Application">
+        <Name>Tests</Name>
+        <Assembly>Tests/Tests.dll</Assembly>
+        <AddInId>906D5C35-B2CD-4C96-8A71-ED3FDA51C3E6</AddInId>
+        <FullClassName>Tests.Application</FullClassName>
+        <VendorId>Development</VendorId>
+        <VendorDescription></VendorDescription>
+    </AddIn>
+</RevitAddIns>
