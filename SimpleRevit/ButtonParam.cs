@@ -70,9 +70,8 @@ public struct ButtonParam
         {
             something(str);
         }
-        catch(Exception e)
+        catch
         {
-            Log.Information(e, $"Failed to load {name} from {str}");
         }
     }
 

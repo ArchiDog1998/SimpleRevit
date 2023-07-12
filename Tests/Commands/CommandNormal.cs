@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using Serilog;
 using SimpleRevit;
 using Tests.ViewModels;
 using Tests.Views;
@@ -18,13 +17,20 @@ public class CommandNormal : CmdBaseMvvm<TestsView, TestsViewModel>
 
     public override void ExecuteMain()
     {
-        using var trans = new Transaction(Document);
-        trans.Start("Test");
-        foreach (var wall in Document.GetInstances(BuiltInCategory.OST_Walls))
-        {
-            wall.CreateSharedParameter("TestOne", SpecTypeId.Int.Integer, BuiltInParameterGroup.INVALID);
-        }
+        //using var trans = new Transaction(Document);
+        //trans.Start("Test");
+        //foreach (var wall in Document.GetInstances(BuiltInCategory.OST_Walls))
+        //{
+        //    wall.GetParameter(BuiltInParameter.WALL_BASE_OFFSET).SetAsync(0.2);
+        //    //wall.CreateSharedParameter("TestOne", SpecTypeId.Int.Integer, BuiltInParameterGroup.INVALID);
+        //}
 
-        trans.Commit();
+        //trans.Commit();
+
+        for (int i = 0; i < 100; i++) 
+        {
+            Task.Delay(100).Wait();
+            UpdatePercent(i);
+        }
     }
 }

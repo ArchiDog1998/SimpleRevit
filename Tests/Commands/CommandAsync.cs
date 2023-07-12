@@ -1,7 +1,5 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using Revit.Async;
-using Serilog;
 using SimpleRevit;
 using Tests.ViewModels;
 using Tests.Views;
@@ -20,8 +18,8 @@ public class CommandAsync : CmdBaseMvvm<TestsView, TestsViewModel>
     public override void ExecuteMain()
     {
         Task.WaitAll(Document.GetInstances(BuiltInCategory.OST_Walls)
-            //.Select(wall => wall.GetParameter(BuiltInParameter.WALL_BASE_OFFSET).SetAsync(0.2))
-            .Select(wall => wall.CreateSharedParameterAsync("TestOne", SpecTypeId.Int.Integer, BuiltInParameterGroup.INVALID))
+            .Select(wall => wall.GetParameter(BuiltInParameter.WALL_BASE_OFFSET).SetAsync(0.2))
+            //.Select(wall => wall.CreateSharedParameterAsync("TestOne", SpecTypeId.Int.Integer, BuiltInParameterGroup.INVALID))
             .ToArray());
     }
 }

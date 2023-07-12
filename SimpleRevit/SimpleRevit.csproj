@@ -64,14 +64,11 @@
         <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*-*" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
         <PackageReference Include="Revit.Async" Version="2.0.1" />
-        <PackageReference Include="Serilog" Version="2.*" />
-        <PackageReference Include="Serilog.Sinks.Debug" Version="2.*" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="Nice3point.Revit.Extensions" />
         <Using Include="Nice3point.Revit.Toolkit.Utils" />
         <Using Include="JetBrains.Annotations" />
-        <Using Include="Serilog" />
     </ItemGroup>
 </Project>
