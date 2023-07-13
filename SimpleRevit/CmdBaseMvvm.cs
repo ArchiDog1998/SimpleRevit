@@ -41,12 +41,13 @@ public abstract class CmdBaseMvvm<TView, TViewModel> : CmdBase
 
     internal override void PostExecute()
     {
-        while (View == null)
+        for (int i = 0; i < 10; i++)
         {
+            if (View != null) break;
             Task.Delay(100).Wait();
         }
 
-        View.Dispatcher.Invoke(View.Close);
+        View?.Dispatcher.Invoke(View.Close);
 
         base.PostExecute();
     }
