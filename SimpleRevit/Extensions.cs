@@ -35,6 +35,25 @@ public static class Extensions
         return @default;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="doc"></param>
+    /// <param name="viewID"></param>
+    /// <returns></returns>
+    public static T[] GetElements<T>(this Document doc, ElementId viewID) where T : Element
+    => new FilteredElementCollector(doc, viewID).OfClass(typeof(T)).Cast<T>().Where(i => i.IsValidObject).ToArray();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="doc"></param>
+    /// <returns></returns>
+    public static T[] GetElements<T>(this Document doc) where T : Element
+        => new FilteredElementCollector(doc).OfClass(typeof(T)).Cast<T>().Where(i => i != null && i.IsValidObject).ToArray();
+
     #region Parameter set value async.
     /// <summary>
     /// Set the <paramref name="parameter"/> to a new <paramref name="value"/>, with <see cref="RevitTask"/>.
