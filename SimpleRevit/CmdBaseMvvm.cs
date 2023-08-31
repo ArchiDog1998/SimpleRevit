@@ -23,7 +23,10 @@ public abstract class CmdBaseMvvm<TView, TViewModel> : CmdBase
 
     DateTime _startTime;
 
-    internal override void PreExecute()
+    /// <summary>
+    /// The things before <seealso cref="CmdBase.ExecuteMain"/> in main thread.
+    /// </summary>
+    public override void PreExecute()
     {
         var thread = new Thread(() =>
         {
@@ -39,7 +42,10 @@ public abstract class CmdBaseMvvm<TView, TViewModel> : CmdBase
         base.PreExecute();
     }
 
-    internal override void PostExecute()
+    /// <summary>
+    /// How to execute your command. If your <see cref="CmdBase.UseRevitAsync"/> is set to true. Please use <seealse cref="CmdBase.RunAsync(Action)"/> to write data to revit document.
+    /// </summary>
+    public override void PostExecute()
     {
         for (int i = 0; i < 10; i++)
         {
