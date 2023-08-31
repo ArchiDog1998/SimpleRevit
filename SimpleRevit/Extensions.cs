@@ -41,18 +41,57 @@ public static class Extensions
     /// <typeparam name="T"></typeparam>
     /// <param name="doc"></param>
     /// <param name="viewID"></param>
+    /// <param name="category"></param>
     /// <returns></returns>
-    public static T[] GetElements<T>(this Document doc, ElementId viewID) where T : Element
-    => new FilteredElementCollector(doc, viewID).OfClass(typeof(T)).Cast<T>().Where(i => i.IsValidObject).ToArray();
+    public static T[] GetElements<T>(this Document doc, ElementId viewID, BuiltInCategory category = BuiltInCategory.INVALID)
+        where T : Element
+        => GetElements<T, T>(doc, viewID, category);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TClass"></typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="doc"></param>
+    /// <param name="viewID"></param>
+    /// <param name="category"></param>
+    /// <returns></returns>
+    public static T[] GetElements<TClass, T>(this Document doc, ElementId viewID, BuiltInCategory category = BuiltInCategory.INVALID) where TClass : Element where T : Element
+        => new FilteredElementCollector(doc, viewID).GetElements<TClass, T>(category);
 
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <param name="category"></param>
     /// <param name="doc"></param>
     /// <returns></returns>
-    public static T[] GetElements<T>(this Document doc) where T : Element
-        => new FilteredElementCollector(doc).OfClass(typeof(T)).Cast<T>().Where(i => i != null && i.IsValidObject).ToArray();
+    public static T[] GetElements<T>(this Document doc, BuiltInCategory category = BuiltInCategory.INVALID) where T : Element
+        => GetElements<T, T>(doc, category);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TClass"></typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="doc"></param>
+    /// <param name="category"></param>
+    /// <returns></returns>
+    public static T[] GetElements<TClass, T>(this Document doc, BuiltInCategory category = BuiltInCategory.INVALID)
+        where TClass : Element where T : Element
+        => new FilteredElementCollector(doc).GetElements<TClass, T>(category);
+
+    private static T[] GetElements<TClass, T>(this FilteredElementCollector collector,
+        BuiltInCategory category)
+        where TClass : Element where T : Element
+    {
+        if (category != BuiltInCategory.INVALID)
+        {
+            collector = collector.OfCategory(category);
+        }
+
+        return collector.OfClass(typeof(TClass)).OfType<T>().Where(i => i != null && i.IsValidObject).ToArray();
+    }
 
     #region Parameter set value async.
     /// <summary>
