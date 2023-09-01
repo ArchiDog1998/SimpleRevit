@@ -100,8 +100,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, bool value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, bool value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -112,8 +112,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, int value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, int value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -124,8 +124,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, double value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, double value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -136,8 +136,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, Color value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, Color value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -148,8 +148,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, string value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, string value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -160,8 +160,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetAsync(this Parameter parameter, ElementId value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetAsync(this Parameter parameter, ElementId value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.Set(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -172,8 +172,8 @@ public static class Extensions
     /// <param name="parameter"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Task SetStringAsync(this Parameter parameter, string value)
-        => parameter.Element.Document.RunTransaction(() =>
+    public static async Task SetStringAsync(this Parameter parameter, string value)
+        => await parameter.Element.Document.RunTransaction(() =>
         {
             parameter.SetValueString(value);
         }, parameter.GetSetValueName(value.ToString()));
@@ -181,18 +181,29 @@ public static class Extensions
     static string GetSetValueName(this Parameter param, string value)
         => $"Set the {param.Definition.Name} of {param.Element.Name} to {value}.";
 
-    static Task RunTransaction(this Document doc, Action action, string name)
-        => RevitTask.RunAsync(() =>
+    static async Task RunTransaction(this Document doc, Action action, string name)
+    {
+        if (AppBase.ForceInMainThread)
         {
             using var trans = new Transaction(doc);
             trans.Start(name);
             action?.Invoke();
             trans.Commit();
-        });
+        }
+        else
+        {
+            await RevitTask.RunAsync(() =>
+            {
+                using var trans = new Transaction(doc);
+                trans.Start(name);
+                action?.Invoke();
+                trans.Commit();
+            });
+        }
+    }
     #endregion
 
     #region CreateParameter
-
     /// <summary>
     /// Create shared parameters.
     /// </summary>
@@ -202,23 +213,34 @@ public static class Extensions
     /// <param name="group"></param>
     /// <param name="option"></param>
     /// <returns></returns>
-    public static Task<Parameter> CreateSharedParameterAsync(this Element element, string paramName, ParameterType paramType,
+    public static async Task<Parameter> CreateSharedParameterAsync(this Element element, string paramName, ParameterType paramType,
     BuiltInParameterGroup group, ParamOption option = ParamOption.All)
     {
         var assemblyName = Assembly.GetCallingAssembly().GetName().Name;
 
-        return RevitTask.RunAsync(() =>
+        if (AppBase.ForceInMainThread)
         {
             using var trans = new Transaction(element.Document);
             trans.Start($"Create {paramName} in {element.Name}");
             var result = element.CreateSharedParameter(paramName, paramType, group, option, assemblyName);
             trans.Commit();
             return result;
-        });
+        }
+        else
+        {
+            return await RevitTask.RunAsync(() =>
+            {
+                using var trans = new Transaction(element.Document);
+                trans.Start($"Create {paramName} in {element.Name}");
+                var result = element.CreateSharedParameter(paramName, paramType, group, option, assemblyName);
+                trans.Commit();
+                return result;
+            });
+        }
     }
 
     /// <summary>
-    /// Create shared parameters.
+    /// Create shared parameters. no transaction.
     /// </summary>
     /// <param name="element"></param>
     /// <param name="paramName"></param>

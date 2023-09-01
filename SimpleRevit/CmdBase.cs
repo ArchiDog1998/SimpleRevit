@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 using Revit.Async;
+using System;
 using System.ComponentModel;
 
 namespace SimpleRevit;
@@ -23,7 +24,7 @@ public abstract class CmdBase : ExternalCommand
     {
         PreExecute();
 
-        if (UseRevitAsync)
+        if (UseRevitAsync && !AppBase.ForceInMainThread)
         {
             RevitTask.Initialize(UiApplication);
             Task.Run(Exe);
@@ -54,7 +55,7 @@ public abstract class CmdBase : ExternalCommand
     }
 
     /// <summary>
-    /// How to execute your command. If your <see cref="UseRevitAsync"/> is set to true. Please use <seealse cref="RevitTask.RunAsync(Action)"/> to write data to revit document.
+    /// How to execute your command. If your <see cref="UseRevitAsync"/> is set to true. Please use <seealse cref="RunAsync(Action)"/> to write data to revit document.
     /// </summary>
     public abstract void ExecuteMain();
 
@@ -72,7 +73,17 @@ public abstract class CmdBase : ExternalCommand
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    protected static Task RunAsync(Action action) => RevitTask.RunAsync(action);
+    protected async Task RunAsync(Action action)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            action();
+        }
+        else
+        {
+            await RevitTask.RunAsync(action);
+        }
+    }
 
     /// <summary>
     /// A short cut for <seealso cref="RevitTask.RunAsync(Action{Autodesk.Revit.UI.UIApplication})"/>
@@ -80,23 +91,53 @@ public abstract class CmdBase : ExternalCommand
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    protected static Task RunAsync(Action<UIApplication> action) => RevitTask.RunAsync(action);
+    protected async Task RunAsync(Action<UIApplication> action)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            action(UiApplication);
+        }
+        else
+        {
+            await RevitTask.RunAsync(action);
+        }
+    }
 
     /// <summary>
-    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{System.Threading.Tasks.Task})"/>
+    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Task})"/>
     /// <para>Please do <b>NOT</b> use it when <seealso cref="UseRevitAsync"/> is <see langword="false"/>.</para>
     /// </summary>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task RunAsync(Func<Task> function) => RevitTask.RunAsync(function);
+    protected async Task RunAsync(Func<Task> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            await function();
+        }
+        else
+        {
+            await RevitTask.RunAsync(function);
+        }
+    }
 
     /// <summary>
-    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Autodesk.Revit.UI.UIApplication, System.Threading.Tasks.Task})"/>
+    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Autodesk.Revit.UI.UIApplication, Task})"/>
     /// <para>Please do <b>NOT</b> use it when <seealso cref="UseRevitAsync"/> is <see langword="false"/>.</para>
     /// </summary>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task RunAsync(Func<UIApplication, Task> function) => RevitTask.RunAsync(function);
+    protected async Task RunAsync(Func<UIApplication, Task> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            await function(UiApplication);
+        }
+        else
+        {
+            await RevitTask.RunAsync(function);
+        }
+    }
 
     /// <summary>
     /// A short cut for <seealso cref="RevitTask.RunAsync{TResult}(Func{Task{TResult}})"/>
@@ -105,7 +146,17 @@ public abstract class CmdBase : ExternalCommand
     /// <typeparam name="TResult"></typeparam>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task<TResult> RunAsync<TResult>(Func<Task<TResult>> function) => RevitTask.RunAsync(function);
+    protected async Task<TResult> RunAsync<TResult>(Func<Task<TResult>> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            return await function();
+        }
+        else
+        {
+            return await RevitTask.RunAsync(function);
+        }
+    }
 
     /// <summary>
     /// A short cut for <seealso cref="RevitTask.RunAsync{TResult}(Func{TResult})"/>
@@ -114,8 +165,17 @@ public abstract class CmdBase : ExternalCommand
     /// <typeparam name="TResult"></typeparam>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task<TResult> RunAsync<TResult>(Func<TResult> function) => RevitTask.RunAsync(function);
-
+    protected async Task<TResult> RunAsync<TResult>(Func<TResult> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            return function();
+        }
+        else
+        {
+            return await RevitTask.RunAsync(function);
+        }
+    }
     /// <summary>
     /// A short cut for <seealso cref="RevitTask.RunAsync{TResult}(Func{Autodesk.Revit.UI.UIApplication, Task{TResult}})"/>
     /// <para>Please do <b>NOT</b> use it when <seealso cref="UseRevitAsync"/> is <see langword="false"/>.</para>
@@ -123,7 +183,17 @@ public abstract class CmdBase : ExternalCommand
     /// <typeparam name="TResult"></typeparam>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task<TResult> RunAsync<TResult>(Func<UIApplication, Task<TResult>> function) => RevitTask.RunAsync(function);
+    protected async Task<TResult> RunAsync<TResult>(Func<UIApplication, Task<TResult>> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            return await function(UiApplication);
+        }
+        else
+        {
+            return await RevitTask.RunAsync(function);
+        }
+    }
 
     /// <summary>
     /// A short cut for <seealso cref="RevitTask.RunAsync{TResult}(Func{Autodesk.Revit.UI.UIApplication, TResult})"/>
@@ -132,6 +202,16 @@ public abstract class CmdBase : ExternalCommand
     /// <typeparam name="TResult"></typeparam>
     /// <param name="function"></param>
     /// <returns></returns>
-    protected static Task<TResult> RunAsync<TResult>(Func<UIApplication, TResult> function) => RevitTask.RunAsync(function);
+    protected async Task<TResult> RunAsync<TResult>(Func<UIApplication, TResult> function)
+    {
+        if (AppBase.ForceInMainThread || !UseRevitAsync)
+        {
+            return function(UiApplication);
+        }
+        else
+        {
+            return await RevitTask.RunAsync(function);
+        }
+    }
     #endregion
 }
