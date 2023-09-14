@@ -11,6 +11,11 @@ namespace SimpleRevit;
 public abstract class AppBase : ExternalApplication
 {
     /// <summary>
+    /// Force the whole solution in the main thread. usually use it for testing.
+    /// </summary>
+    public static bool ForceInMainThread { get; set; } = false;
+
+    /// <summary>
     /// Overload this method to execute some tasks when Revit.
     /// </summary>
     public override void OnStartup()
