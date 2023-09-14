@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows;
 
 namespace SimpleRevit;
 
@@ -9,7 +10,7 @@ namespace SimpleRevit;
 /// <typeparam name="TViewModel">your view model.</typeparam>
 public abstract class CmdBaseMvvm<TView, TViewModel> : CmdBase
     where TView : Window 
-    where TViewModel : SimpleRevitViewModel
+    where TViewModel : ObservableObject
 {
     /// <summary>
     /// The window.
@@ -64,12 +65,12 @@ public abstract class CmdBaseMvvm<TView, TViewModel> : CmdBase
     /// <param name="percent"></param>
     public void UpdatePercent(double percent)
     {
-        if(ViewModel == null) return;
+        if (ViewModel is not SimpleRevitViewModel viewmodel) return;
         if(percent == 0)
         {
             _startTime = DateTime.Now;
         }
-        ViewModel.Percent = percent;
-        ViewModel.ElapsedTime = DateTime.Now - _startTime;
+        viewmodel.Percent = percent;
+        viewmodel.ElapsedTime = DateTime.Now - _startTime;
     }
 }
