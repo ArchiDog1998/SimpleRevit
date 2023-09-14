@@ -1,4 +1,5 @@
-﻿using Nice3point.Revit.Toolkit.External;
+﻿using Autodesk.Revit.UI;
+using Nice3point.Revit.Toolkit.External;
 using System.IO;
 using System.Reflection;
 
@@ -9,17 +10,6 @@ namespace SimpleRevit;
 /// </summary>
 public abstract class AppBase : ExternalApplication
 {
-    /// <summary>
-    /// Force the whole solution in the main thread. usually use it for testing.
-    /// </summary>
-    public static bool ForceInMainThread { get; set; } = false;
-
-    /// <summary>
-    /// The attributes about push button for display.
-    /// </summary>
-    public virtual SortedList<string, ButtonParam> PushButtonParams { get; }
-        = new SortedList<string, ButtonParam>();
-
     /// <summary>
     /// Overload this method to execute some tasks when Revit.
     /// </summary>
@@ -68,10 +58,9 @@ public abstract class AppBase : ExternalApplication
             }
             else
             {
-                var pulldownButton = panel.AddPullDownButton($"{assemblyName}: {pullButton}", pullButton);
+                var name = $"{assemblyName}: {pullButton}";
 
-                if (PushButtonParams.TryGetValue(pullButton, out var p))
-                    p.Apply(pulldownButton, originPath);
+                var pulldownButton = panel.GetItems().OfType<SplitButton>().FirstOrDefault(i => i.Name == name) ?? panel.AddSplitButton(name, pullButton);
 
                 new ButtonParam(attrs).Apply(pulldownButton.AddPushButton(type, pubhButtonName), originPath);
             }
