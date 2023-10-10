@@ -15,6 +15,8 @@ public abstract class AppBase : ExternalApplication
     /// </summary>
     public static bool ForceInMainThread { get; set; } = false;
 
+    internal static Dictionary<string, RevitCommandId> Commands { get; } = new Dictionary<string, RevitCommandId>();
+
     /// <summary>
     /// Overload this method to execute some tasks when Revit.
     /// </summary>
@@ -51,24 +53,31 @@ public abstract class AppBase : ExternalApplication
 
             var attrs = type.GetCustomAttributes<CmdAttribute>(true);
 
-            var path = attrs.GetFirstValue(i => i.Panel);
-            var panel = Application.CreatePanel(string.IsNullOrEmpty(path) ? "Default" : path, assemblyName);
+            var panel = Application.CreatePanel(attrs.GetPanel(), assemblyName);
 
-            var pullButton = attrs.GetFirstValue(i => i.PulldownButton);
-            var pubhButtonName = attrs.GetFirstValue(i => i.Name, @default: "unnamed");
+            var pullButton = attrs.GetPulldownButton();
+            var pushButtonName = attrs.GetName();
 
             if (string.IsNullOrEmpty(pullButton))
             {
-                new ButtonParam(attrs).Apply(panel.AddPushButton(type, pubhButtonName), originPath);
+                var button = panel.AddPushButton(type, pushButtonName);
+                AddCommand(button);
+                new ButtonParam(attrs).Apply(button, originPath);
             }
             else
             {
-                var name = $"{assemblyName}: {pullButton}";
-
+                var name = CmdExtension.GetPulldownButtonInternal(assemblyName, pullButton);
                 var pulldownButton = panel.GetItems().OfType<SplitButton>().FirstOrDefault(i => i.Name == name) ?? panel.AddSplitButton(name, pullButton);
 
-                new ButtonParam(attrs).Apply(pulldownButton.AddPushButton(type, pubhButtonName), originPath);
+                var button = pulldownButton.AddPushButton(type, pushButtonName);
+                AddCommand(button);
+                new ButtonParam(attrs).Apply(button, originPath);
             }
         }
+    }
+
+    private static void AddCommand(RibbonItem button)
+    {
+        Commands[button.Name] = button.GetCommandId();
     }
 }

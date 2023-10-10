@@ -40,12 +40,12 @@ public struct ButtonParam
 
     internal ButtonParam(IEnumerable<CmdAttribute> attrs)
     {
-        Image = attrs.GetFirstValue(i => i.Image);
-        LargeImage = attrs.GetFirstValue(i => i.LargeImage);
-        Url = attrs.GetFirstValue(i => i.Url);
-        ToolTip = attrs.GetFirstValue(i => i.ToolTip);
-        ToolTipImage = attrs.GetFirstValue(i => i.ToolTipImage);
-        LongDescription = attrs.GetFirstValue(i => i.LongDescription);
+        Image = attrs.GetImage();
+        LargeImage = attrs.GetLargeImage();
+        Url = attrs.GetUrl();
+        ToolTip = attrs.GetToolTip();
+        ToolTipImage = attrs.GetToolTipImage();
+        LongDescription = attrs.GetLongDescription();
     }
 
     internal void Apply(RibbonButton button, string originPath)
@@ -53,8 +53,14 @@ public struct ButtonParam
         TryImage(originPath + Image, button.SetImage, nameof(Image));
         TryImage(originPath + LargeImage, button.SetLargeImage, nameof(LargeImage));
         if(!string.IsNullOrEmpty(Url)) button.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, Url));
-        button.ToolTip = ToolTip;
-        button.LongDescription = LongDescription;
+        if (!string.IsNullOrEmpty(ToolTip))
+        {
+            button.ToolTip = ToolTip;
+        }
+        if (!string.IsNullOrEmpty(LongDescription))
+        {
+            button.LongDescription = LongDescription;
+        }
         TryImage(originPath + ToolTipImage, s =>
         {
             button.ToolTipImage = GetImage(s);

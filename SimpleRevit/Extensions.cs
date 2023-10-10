@@ -1,15 +1,14 @@
 ﻿using Autodesk.Revit.DB;
 using Revit.Async;
-using System;
 using System.IO;
 using System.Reflection;
 using Autodesk.Revit.ApplicationServices;
-using System.Runtime.InteropServices;
+using Autodesk.Revit.UI;
 
 #if R22_OR_GREATER
 using ParameterType = Autodesk.Revit.DB.ForgeTypeId;
 #else
- using ParameterType = Autodesk.Revit.DB.ParameterType;
+using ParameterType = Autodesk.Revit.DB.ParameterType;
 #endif
 
 namespace SimpleRevit;
@@ -19,20 +18,22 @@ namespace SimpleRevit;
 /// </summary>
 public static class Extensions
 {
-    internal static TResult GetFirstValue<TSource, TResult>(this IEnumerable<TSource> sources, 
-        Func<TSource, TResult> selector, Func<TResult, bool> predict = null, TResult @default = default)
+    static FieldInfo ribbonItemInfo;
+    static PropertyInfo idInfo;
+    /// <summary>
+    /// Get the command id from button.
+    /// </summary>
+    /// <param name="button"></param>
+    /// <returns></returns>
+    public static RevitCommandId GetCommandId(this RibbonItem button)
     {
-        if (sources == null || selector == null) return @default;
+        var type = typeof(RibbonItem);
+        ribbonItemInfo ??= type.GetRuntimeFields().FirstOrDefault(f => f.Name == "m_RibbonItem");
+        var ribbon = ribbonItemInfo.GetValue(button);
 
-        predict ??= i => i != null 
-        && (i is not string s || !string.IsNullOrEmpty(s));
-
-        foreach (var source in sources)
-        {
-            var result = selector(source);
-            if(result != null && predict(result)) return result;
-        }
-        return @default;
+        type = ribbon.GetType();
+        idInfo ??= type.GetRuntimeProperties().FirstOrDefault(p => p.Name == "Id");
+        return RevitCommandId.LookupCommandId(idInfo.GetValue(ribbon) as string);
     }
 
     /// <summary>

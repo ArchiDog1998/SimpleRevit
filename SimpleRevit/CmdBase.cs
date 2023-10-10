@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 using Revit.Async;
-using System;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace SimpleRevit;
 
@@ -15,6 +15,12 @@ public abstract class CmdBase : ExternalCommand
     /// Whether to use <seealso cref="RevitTask"/> to accelerate your Command. If you are a begginer, please set this to false.
     /// </summary>
     protected abstract bool UseRevitAsync { get; }
+
+    /// <summary>
+    /// The command id of this command.
+    /// </summary>
+    public virtual RevitCommandId CommandId 
+        => AppBase.Commands.TryGetValue(this.GetType().FullName, out var id) ? id : null;
 
     /// <summary>
     /// Execute the command.
