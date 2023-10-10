@@ -2,6 +2,7 @@
 using Nice3point.Revit.Toolkit.External;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace SimpleRevit;
 
@@ -10,12 +11,23 @@ namespace SimpleRevit;
 /// </summary>
 public abstract class AppBase : ExternalApplication
 {
+    private const uint WINEVENT_OUTOFCONTEXT = 0, EVENT_SYSTEM_FOREGROUND = 3;
+    static WinEventDelegate dele = null;
+
     /// <summary>
     /// Force the whole solution in the main thread. usually use it for testing.
     /// </summary>
     public static bool ForceInMainThread { get; set; } = false;
 
     internal static Dictionary<string, RevitCommandId> Commands { get; } = new Dictionary<string, RevitCommandId>();
+
+    /// <summary>
+    /// Delegate of the window changed.
+    /// </summary>
+    /// <param name="hwnd">the hwnd of the active window.</param>
+    public delegate void WindowChangedDelegate(IntPtr hwnd);
+
+    delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
     /// <summary>
     /// Overload this method to execute some tasks when Revit.
@@ -26,9 +38,40 @@ public abstract class AppBase : ExternalApplication
         var assemblyName = assembly.GetName().Name;
 
         m_CreateRibbon(assembly, assemblyName);
+        CleanUserDataFile(assemblyName);
+        StartActiveWindowListener();
+    }
 
-        var shouldName = UiApplication.Application.CurrentUsersDataFolderPath + $"\\{assemblyName}.txt";
-        if (File.Exists(shouldName)) File.Delete(shouldName);
+    /// <summary>
+    /// Window changed.
+    /// </summary>
+    public static event WindowChangedDelegate ActiveWindowChanged;
+
+    private static void StartActiveWindowListener()
+    {
+        if (dele != null) return;
+        dele = new WinEventDelegate(WinEventProc);
+        IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0, WINEVENT_OUTOFCONTEXT);
+    }
+
+    [DllImport("user32.dll")]
+    static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+
+    private static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+    {
+        try
+        {
+            ActiveWindowChanged?.Invoke(hwnd);
+        }
+        catch
+        {
+        }
+    }
+
+    private void CleanUserDataFile(string assemblyName)
+    {
+        var userDataFile = UiApplication.Application.CurrentUsersDataFolderPath + $"\\{assemblyName}.txt";
+        if (File.Exists(userDataFile)) File.Delete(userDataFile);
     }
 
     private void m_CreateRibbon(Assembly assembly, string assemblyName)
