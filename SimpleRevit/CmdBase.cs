@@ -17,6 +17,11 @@ public abstract class CmdBase : ExternalCommand
     protected abstract bool UseRevitAsync { get; }
 
     /// <summary>
+    /// Is the command running
+    /// </summary>
+    public static bool IsRunning { get; private set; } = false;
+
+    /// <summary>
     /// The command id of this command.
     /// </summary>
     public virtual RevitCommandId CommandId 
@@ -58,6 +63,7 @@ public abstract class CmdBase : ExternalCommand
     /// </summary>
     public virtual void PreExecute()
     {
+        IsRunning = true;
     }
 
     /// <summary>
@@ -70,6 +76,7 @@ public abstract class CmdBase : ExternalCommand
     /// </summary>
     public virtual void PostExecute()
     {
+        IsRunning = false;
     }
 
     #region RunAsync
@@ -110,7 +117,7 @@ public abstract class CmdBase : ExternalCommand
     }
 
     /// <summary>
-    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Task})"/>
+    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{System.Threading.Tasks.Task})"/>
     /// <para>Please do <b>NOT</b> use it when <seealso cref="UseRevitAsync"/> is <see langword="false"/>.</para>
     /// </summary>
     /// <param name="function"></param>
@@ -128,7 +135,7 @@ public abstract class CmdBase : ExternalCommand
     }
 
     /// <summary>
-    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Autodesk.Revit.UI.UIApplication, Task})"/>
+    /// A short cut for <seealso cref="RevitTask.RunAsync(Func{Autodesk.Revit.UI.UIApplication, System.Threading.Tasks.Task})"/>
     /// <para>Please do <b>NOT</b> use it when <seealso cref="UseRevitAsync"/> is <see langword="false"/>.</para>
     /// </summary>
     /// <param name="function"></param>
