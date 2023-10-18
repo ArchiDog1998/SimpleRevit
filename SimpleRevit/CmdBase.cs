@@ -38,7 +38,7 @@ public abstract class CmdBase : ExternalCommand
         if (UseRevitAsync && !AppBase.ForceInMainThread)
         {
             RevitTask.Initialize(UiApplication);
-            Task.Run(Exe);
+            Exe();
         }
         else
         {

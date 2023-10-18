@@ -17,14 +17,14 @@ public class CommandNormal : CmdBaseMvvm<TestsView, TestsViewModel>
 
     public override void ExecuteMain()
     {
-        //using var trans = new Transaction(Document);
-        //trans.Start("Test");
-        //foreach (var wall in Document.GetInstances(BuiltInCategory.OST_Walls))
-        //{
-        //    wall.GetParameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0.2);
-        //    wall.CreateSharedParameter("TestOne", SpecTypeId.Int.Integer, BuiltInParameterGroup.INVALID);
-        //}
-        //trans.Commit();
+        using var trans = new Transaction(Document);
+        trans.Start("Test");
+        foreach (var wall in Document.GetInstances(BuiltInCategory.OST_Walls))
+        {
+            wall.GetParameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0.2);
+            wall.CreateSharedParameter("TestOne", ParameterType.Integer, BuiltInParameterGroup.INVALID);
+        }
+        trans.Commit();
 
         for (int i = 0; i < 100; i++) 
         {
