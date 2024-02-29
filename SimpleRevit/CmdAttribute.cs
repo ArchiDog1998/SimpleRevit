@@ -89,8 +89,8 @@ internal static class CmdExtension
     internal static string GetLongDescription(this IEnumerable<CmdAttribute> attrs)
         => attrs.GetFirstValue(i => i.LongDescription);
 
-    internal static string GetPanel(this IEnumerable<CmdAttribute> attrs)
-        => attrs.GetFirstValue(i => i.Panel, @default: "Default");
+    internal static string GetPanel(this IEnumerable<CmdAttribute> attrs, string @default)
+        => attrs.GetFirstValue(i => i.Panel, @default: @default);
 
     internal static string GetPulldownButton(this IEnumerable<CmdAttribute> attrs)
         => attrs.GetFirstValue(i => i.PulldownButton);

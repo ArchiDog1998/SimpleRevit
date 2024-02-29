@@ -22,6 +22,11 @@ public abstract class AppBase : ExternalApplication
     internal static Dictionary<string, RevitCommandId> Commands { get; } = new Dictionary<string, RevitCommandId>();
 
     /// <summary>
+    /// Your custom assembly name.
+    /// </summary>
+    public virtual string AssemblyName => null;
+
+    /// <summary>
     /// Delegate of the window changed.
     /// </summary>
     /// <param name="hwnd">the hwnd of the active window.</param>
@@ -96,7 +101,7 @@ public abstract class AppBase : ExternalApplication
 
             var attrs = type.GetCustomAttributes<CmdAttribute>(true);
 
-            var panel = Application.CreatePanel(attrs.GetPanel(), assemblyName);
+            var panel = Application.CreatePanel(attrs.GetPanel(AssemblyName ?? assemblyName), AssemblyName ?? assemblyName);
 
             var pullButton = attrs.GetPulldownButton();
             var pushButtonName = attrs.GetName();
