@@ -50,8 +50,8 @@ public struct ButtonParam
 
     internal void Apply(RibbonButton button, string originPath)
     {
-        TryImage(originPath + Image, button.SetImage, nameof(Image));
-        TryImage(originPath + LargeImage, button.SetLargeImage, nameof(LargeImage));
+        TryImage(originPath + Image, url => button.SetImage(url), nameof(Image));
+        TryImage(originPath + LargeImage, url => button.SetLargeImage(url), nameof(LargeImage));
         if(!string.IsNullOrEmpty(Url)) button.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, Url));
         if (!string.IsNullOrEmpty(ToolTip))
         {
